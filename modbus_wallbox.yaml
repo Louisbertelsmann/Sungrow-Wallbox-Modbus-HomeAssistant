@@ -1,1 +1,440 @@
+# Home Assistant Sungrow wallbox integration
+# https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
+# by Louis Bertelsmann
+# last update: 2023-11-17
 
+modbus:
+  - name: SungrowACx
+    type: tcp
+    host: !secret wallbox_modbus_host_ip
+    port: !secret wallbox_modbus_port
+    retries: 10
+    sensors:
+      - name: Wallbox device type code
+        unique_id: wb1_dev_number_raw
+        slave: !secret wallbox_modbus_slave
+        address: 21223 # reg 21224
+        input_type: input
+        data_type: uint16
+        scan_interval: 600
+
+      - name: Power phases
+        unique_id: wb1_power_phases
+        slave: !secret wallbox_modbus_slave
+        address: 21224 # reg 21225
+        input_type: input
+        data_type: uint16
+        scan_interval: 600
+
+      - name: Rated voltage
+        unique_id: wb1_rated_voltage
+        slave: !secret wallbox_modbus_slave
+        address: 21261 # reg 21262
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: Voltage
+        scan_interval: 600
+
+      - name: Working mode
+        unique_id: wb1_rated_voltage
+        slave: !secret wallbox_modbus_slave
+        address: 21262 # reg 21263
+        input_type: input
+        data_type: uint16
+        scan_interval: 600
+
+      - name: Phase switching status Raw
+        unique_id: wb1_phase_switching_status_raw
+        slave: !secret wallbox_modbus_slave
+        address: 21269 # reg 21270
+        input_type: input
+        data_type: uint16
+        scan_interval: 60
+
+      - name: Minimum charging power
+        unique_id: wb1_minimum_charging_power
+        slave: !secret wallbox_modbus_slave
+        address: 21271 # reg 21272
+        input_type: input
+        data_type: uint16
+        precision: 1
+        unit_of_measurement: W
+        device_class: Power
+        scale: 1
+        scan_interval: 60
+
+      - name: Maximum charging power
+        unique_id: wb1_maximum_charging_power
+        slave: !secret wallbox_modbus_slave
+        address: 21272 # reg 21273
+        input_type: input
+        data_type: uint32
+        precision: 1
+        unit_of_measurement: W
+        device_class: Power
+        scale: 1
+        scan_interval: 60
+
+      - name: Total energy
+        unique_id: wb1_total_energy
+        slave: !secret wallbox_modbus_slave
+        address: 21299 # reg 21300
+        input_type: input
+        data_type: uint32
+        precision: 1
+        unit_of_measurement: Wh
+        device_class: Energy
+        scale: 1
+        scan_interval: 600
+
+      - name: Phase A charging voltage
+        unique_id: wb1_phase_a_charging_voltage
+        slave: !secret wallbox_modbus_slave
+        address: 21301 # reg 21302
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: Voltage
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Phase A charging current
+        unique_id: wb1_phase_a_charging_current
+        slave: !secret wallbox_modbus_slave
+        address: 21302 # reg 21303
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Phase B charging voltage
+        unique_id: wb1_phase_b_charging_voltage
+        slave: !secret wallbox_modbus_slave
+        address: 21303 # reg: 21304
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: Voltage
+        state_class: measurement
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Phase B charging current
+        unique_id: wb1_phase_b_charging_current
+        slave: !secret wallbox_modbus_slave
+        address: 21304 # reg: 21305
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: A
+        device_class: Current
+        state_class: measurement
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Phase C charging voltage
+        unique_id: wb1_phase_c_charging_voltage
+        slave: !secret wallbox_modbus_slave
+        address: 21305 # reg: 21306
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: V
+        device_class: Voltage
+        state_class: measurement
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Phase C charging current
+        unique_id: wb1_phase_c_charging_current
+        slave: !secret wallbox_modbus_slave
+        address: 21306 # reg 21307
+        input_type: input
+        data_type: uint16
+        unit_of_measurement: A
+        device_class: Current
+        state_class: measurement
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Charging power
+        unique_id: wb1_charging_power
+        slave: !secret wallbox_modbus_slave
+        address: 21307 # reg 21308
+        input_type: input
+        data_type: uint32
+        unit_of_measurement: W
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: Charging energy
+        unique_id: wb1_charging_energy
+        slave: !secret wallbox_modbus_slave
+        address: 21309 # reg 21310
+        input_type: input
+        data_type: uint32
+        unit_of_measurement: Wh
+        device_class: Energy
+        state_class: total_increasing
+        scale: 1
+        scan_interval: 60 
+
+      - name: Charging status Raw
+        unique_id: wb1_charging_status
+        slave: !secret wallbox_modbus_slave
+        address: 21316 # reg 21317
+        input_type: input
+        data_type: uint16
+        scan_interval: 10
+      
+      - name: Charging start time
+        unique_id: wb1_charging_start_time
+        slave: !secret wallbox_modbus_slave
+        address: 21317 # reg 21318
+        input_type: input
+        data_type: uint32
+        scan_interval: 10
+      
+      - name: Charging end time
+        unique_id: wb1_charging_end_time
+        slave: !secret wallbox_modbus_slave
+        address: 21319 # reg 21320
+        input_type: input
+        data_type: uint32
+        scan_interval: 10
+
+      - name: Mileage per kWh
+        unique_id: wb1_mile_per_kwh
+        slave: !secret wallbox_modbus_slave
+        address: 21231 # reg 21232
+        input_type: input
+        data_type: uint16
+        scan_interval: 10
+
+      #####################
+      # holding registers
+      #####################
+
+      - name: Output current setting
+        unique_id: wb1_output_current_setting
+        slave: !secret wallbox_modbus_slave
+        address: 21202 # reg 21203
+        input_type: holding
+        data_type: uint16
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Single phase/Three phase switching
+        unique_id: wb1_phase_switching
+        slave: !secret wallbox_modbus_slave
+        address: 21203 # reg 21204
+        input_type: holding
+        data_type: uint16
+        scan_interval: 10
+
+      - name: Charger enable
+        unique_id: wb1_charger_enable
+        slave: !secret wallbox_modbus_slave
+        address: 21210 # reg 21211
+        input_type: holding
+        data_type: uint16
+        scan_interval: 10
+
+      - name: Remote control
+        unique_id: wb1_remote_control
+        slave: !secret wallbox_modbus_slave
+        address: 21211 # reg 21212
+        input_type: holding
+        data_type: uint16
+        scan_interval: 10
+
+template:
+  - sensor:
+      - name: Wallbox device type
+        unique_id: wb1_device_type
+        availability:
+          {{states('sensor.wallbox_device_type_code')|is_number}}
+        state: >-
+          {% if ((states('sensor.wallbox_device_type_code') | int(default=0))  == 0x20ED) %}
+            AC007-00
+          {% elif ((states('sensor.wallbox_device_type_code') | int(default=0)) == 0x20DA) %}
+            AC011E-01
+          {% else %}
+            Unknown device code!
+          {% endif %}
+      
+      - name: Wallbox working mode
+        unique_id: wb1_working_mode
+        availability:
+          {{states('sensor.working_mode')|is_number}}
+        state: >-
+          {% if ((states('sensor.working_mode') | int(default=0))  == 0) %}
+            Network
+          {% elif ((states('sensor.working_mode') | int(default=0)) == 2) %}
+            Plug and Play
+          {% elif ((states('sensor.working_mode') | int(default=0)) == 6) %}
+            EMS
+          {% else %}
+            Unknown working mode!
+          {% endif %}
+        
+      - name: Phase switching status
+        unique_id: wb1_phase_switching_status
+        availability:
+          {{states('sensor.phase_switching_status_raw')|is_number}}
+        state: >-
+          {% if ((states('sensor.phase_switching_status_raw') | int(default=0))  == 0) %}
+            Three-phase
+          {% elif ((states('sensor.phase_switching_status_raw') | int(default=0)) == ) %}
+            Single-phase
+          {% else %}
+            Unknown phase switching status!
+          {% endif %}
+
+      - name: Charging status
+        unique_id: wb1_charging_status
+        availability:
+          {{states('sensor.charging_status_raw')|is_number}}
+        state: >-
+          {% if ((states('sensor.charging_status_raw') | int(default=0))  == 1) %}
+            Idle
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 2) %}
+            Standby
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 3) %}
+            Charging
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 4) %}
+            Charging is suspended (pile side)
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 5) %}
+            Charging is suspended (vehicle side)
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 6) %}
+            Charging is completed
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 7) %}
+            Reserved
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 8) %}
+            Disabled
+          {% elif ((states('sensor.charging_status_raw') | int(default=0)) == 9) %}
+            Fault
+          {% else %}
+            Unknown charging status!
+          {% endif %}
+
+input_number:
+  set_wb1_output_current:
+    name: Set output current
+    min: 6
+    max: 63
+    step: 0.1
+
+input_select:
+  set_wb_phase_switch:
+    name: Phase switch
+    options:
+      - "Three phase"
+      - "Single phase"
+  
+  set_wb_charger_enable:
+    name: Charger enable
+    options:
+      - "Disable"
+      - "Enable"
+  
+  set_wb_remote_control:
+    name: Remote control
+    options:
+      - "Start charging"
+      - "Stop charging"
+
+automation:
+  - id: "automation_wallbox_output_current"
+    alias: "wallbox output current"
+    description: "Sets the maximum output current of the wallbox"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.set_wb1_output_current
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21202 # reg 21203
+          value: "{{ states('input_number.set_wb1_output_current') | int }}"
+    mode: single
+
+  - id: "automation_wallbox_change_phase_switch_cmd"
+    alias: "wallbox change phase switch cmd"
+    description: "Switch wallbox operation mode between Single- and Three-phase mode"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.set_wb_phase_switch
+    condition: []
+    variables:
+      three_phase: 0
+      single_phase: 1
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21203 # reg 21204
+          value: >
+            {% if is_state('input_select.set_wb_phase_switch', "Three phase") %} 
+              {{three_phase}}
+            {% elif is_state('input_select.set_wb_phase_switch', "Single phase") %} 
+              {{single_phase}}
+            {% endif %}
+    mode: single
+  
+  - id: "automation_wallbox_charger_enable_cmd"
+    alias: "wallbox charger enable cmd"
+    description: "Switch wallbox operation mode between enabled and disabled"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.set_wb_charger_enable
+    condition: []
+    variables:
+      disable: 0
+      enable: 1
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21210 # reg 21211
+          value: >
+            {% if is_state('input_select.set_wb_charger_enable', "Disable") %} 
+              {{disable}}
+            {% elif is_state('input_select.set_wb_phase_switch', "Enable") %} 
+              {{enable}}
+            {% endif %}
+    mode: single
+  
+  - id: "automation_wallbox_remote_control_cmd"
+    alias: "wallbox charger remote control cmd"
+    description: "Remote control wallbox"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.set_wb_remote_control
+    condition: []
+    variables:
+      start_charging: 0
+      stop_charging: 1
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21211 # reg 21212
+          value: >
+            {% if is_state('input_select.set_wb_remote_control', "Start charging") %} 
+              {{start_charging}}
+            {% elif is_state('input_select.set_wb_remote_control', "Stop charging") %} 
+              {{stop_charging}}
+            {% endif %}
+    mode: single
