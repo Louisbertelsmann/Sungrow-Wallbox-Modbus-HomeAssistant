@@ -256,7 +256,7 @@ template:
       - name: Wallbox device type
         unique_id: wb1_device_type
         availability:
-          {{states('sensor.wallbox_device_type_code')|is_number}}
+          "{{states('sensor.wallbox_device_type_code')|is_number}}"
         state: >-
           {% if ((states('sensor.wallbox_device_type_code') | int(default=0))  == 0x20ED) %}
             AC007-00
@@ -269,7 +269,7 @@ template:
       - name: Wallbox working mode
         unique_id: wb1_working_mode
         availability:
-          {{states('sensor.working_mode')|is_number}}
+          "{{states('sensor.working_mode')|is_number}}"
         state: >-
           {% if ((states('sensor.working_mode') | int(default=0))  == 0) %}
             Network
@@ -284,7 +284,7 @@ template:
       - name: Phase switching status
         unique_id: wb1_phase_switching_status
         availability:
-          {{states('sensor.phase_switching_status_raw')|is_number}}
+          "{{states('sensor.phase_switching_status_raw')|is_number}}"
         state: >-
           {% if ((states('sensor.phase_switching_status_raw') | int(default=0))  == 0) %}
             Three-phase
@@ -297,7 +297,7 @@ template:
       - name: Charging status
         unique_id: wb1_charging_status
         availability:
-          {{states('sensor.charging_status_raw')|is_number}}
+          "{{states('sensor.charging_status_raw')|is_number}}"
         state: >-
           {% if ((states('sensor.charging_status_raw') | int(default=0))  == 1) %}
             Idle
