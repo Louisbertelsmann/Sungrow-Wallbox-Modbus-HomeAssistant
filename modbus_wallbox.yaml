@@ -40,7 +40,7 @@ modbus:
         unique_id: wb1_working_mode
         slave: !secret wallbox_modbus_slave
         address: 21262 # reg 21263
-        input_type: input
+        input_type: holding
         data_type: uint16
         scan_interval: 600
 
@@ -210,7 +210,7 @@ modbus:
         unique_id: wb1_mile_per_kwh
         slave: !secret wallbox_modbus_slave
         address: 21231 # reg 21232
-        input_type: input
+        input_type: holding
         data_type: uint16
         scan_interval: 10
 
