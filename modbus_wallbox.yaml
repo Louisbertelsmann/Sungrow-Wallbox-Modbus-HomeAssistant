@@ -190,20 +190,22 @@ modbus:
         data_type: uint16
         scan_interval: 10
       
-      - name: Charging start time
-        unique_id: wb1_charging_start_time
+      - name: Charging start time Raw
+        unique_id: wb1_charging_start_time_raw
         slave: !secret wallbox_modbus_slave
         address: 21317 # reg 21318
         input_type: input
         data_type: uint32
+        swap: word
         scan_interval: 10
       
-      - name: Charging end time
-        unique_id: wb1_charging_end_time
+      - name: Charging end time Raw
+        unique_id: wb1_charging_end_time_raw
         slave: !secret wallbox_modbus_slave
         address: 21319 # reg 21320
         input_type: input
         data_type: uint32
+        swap: word
         scan_interval: 10
 
       - name: Mileage per kWh
@@ -256,6 +258,16 @@ modbus:
 
 template:
   - sensor:
+      - name: Charging start time
+        unique_id: wb1_charging_start_time
+        state: >
+          {{ as_datetime(states.sensor.charging_start_time_raw.state) }}
+
+      - name: Charging end time
+        unique_id: wb1_charging_end_time
+        state: >
+          {{ as_datetime(states.sensor.charging_end_time_raw.state) }}
+  
       - name: Wallbox device type
         unique_id: wb1_device_type
         availability:
