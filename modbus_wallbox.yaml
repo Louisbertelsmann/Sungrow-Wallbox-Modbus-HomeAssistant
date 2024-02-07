@@ -212,6 +212,9 @@ modbus:
         address: 21231 # reg 21232
         input_type: holding
         data_type: uint16
+        unit_of_measurement: km/kWh
+        precision: 1
+        scale: 0.1
         scan_interval: 10
 
       #####################
