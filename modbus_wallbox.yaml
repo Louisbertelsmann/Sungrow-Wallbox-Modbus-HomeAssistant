@@ -36,14 +36,6 @@ modbus:
         device_class: Voltage
         scan_interval: 600
 
-      - name: Working mode
-        unique_id: wb1_working_mode
-        slave: !secret wallbox_modbus_slave
-        address: 21262 # reg 21263
-        input_type: holding
-        data_type: uint16
-        scan_interval: 600
-
       - name: Phase switching status Raw
         unique_id: wb1_phase_switching_status_raw
         slave: !secret wallbox_modbus_slave
@@ -208,17 +200,6 @@ modbus:
         swap: word
         scan_interval: 10
 
-      - name: Mileage per kWh
-        unique_id: wb1_mile_per_kwh
-        slave: !secret wallbox_modbus_slave
-        address: 21231 # reg 21232
-        input_type: holding
-        data_type: uint16
-        unit_of_measurement: km/kWh
-        precision: 1
-        scale: 0.1
-        scan_interval: 10
-
       #####################
       # holding registers
       #####################
@@ -255,6 +236,25 @@ modbus:
         input_type: holding
         data_type: uint16
         scan_interval: 10
+
+       - name: Mileage per kWh
+        unique_id: wb1_mile_per_kwh
+        slave: !secret wallbox_modbus_slave
+        address: 21231 # reg 21232
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: km/kWh
+        precision: 1
+        scale: 0.1
+        scan_interval: 10
+
+       - name: Working mode
+        unique_id: wb1_working_mode
+        slave: !secret wallbox_modbus_slave
+        address: 21262 # reg 21263
+        input_type: holding
+        data_type: uint16
+        scan_interval: 600
 
 template:
   - sensor:
