@@ -237,7 +237,7 @@ modbus:
         data_type: uint16
         scan_interval: 10
 
-       - name: Mileage per kWh
+      - name: Mileage per kWh
         unique_id: wb1_mile_per_kwh
         slave: !secret wallbox_modbus_slave
         address: 21231 # reg 21232
@@ -248,7 +248,7 @@ modbus:
         scale: 0.1
         scan_interval: 10
 
-       - name: Working mode
+      - name: Working mode
         unique_id: wb1_working_mode
         slave: !secret wallbox_modbus_slave
         address: 21262 # reg 21263
