@@ -61,7 +61,7 @@ modbus:
         slave: !secret wallbox_modbus_slave
         address: 21272 # reg 21273
         input_type: input
-        data_type: uint32
+        data_type: uint16
         precision: 1
         unit_of_measurement: W
         device_class: Power
@@ -78,6 +78,7 @@ modbus:
         unit_of_measurement: Wh
         device_class: Energy
         scale: 1
+        swap: word
         scan_interval: 600
 
       - name: Phase A charging voltage
@@ -168,10 +169,12 @@ modbus:
         address: 21309 # reg 21310
         input_type: input
         data_type: uint32
-        unit_of_measurement: Wh
+        unit_of_measurement: kWh
         device_class: Energy
         state_class: total_increasing
-        scale: 1
+        precision: 3
+        scale: 0.001
+        swap: word
         scan_interval: 60 
 
       - name: Charging status Raw
