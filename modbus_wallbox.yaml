@@ -269,6 +269,11 @@ template:
         unique_id: wb1_charging_end_time
         state: >
           {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).isoformat() }}
+
+      - name: Charging duration
+        unique_id: wb1_charging_duration
+        state: >
+          {{ as_datetime(states.sensor.charging_end_time_raw.state) - as_datetime(states.sensor.charging_start_time_raw.state) }}
   
       - name: Wallbox device type
         unique_id: wb1_device_type
