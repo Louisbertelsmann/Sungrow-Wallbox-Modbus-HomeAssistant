@@ -169,11 +169,10 @@ modbus:
         address: 21309 # reg 21310
         input_type: input
         data_type: uint32
-        unit_of_measurement: kWh
+        unit_of_measurement: Wh
         device_class: Energy
         state_class: total_increasing
-        precision: 3
-        scale: 0.001
+        scale: 1
         swap: word
         scan_interval: 60 
 
