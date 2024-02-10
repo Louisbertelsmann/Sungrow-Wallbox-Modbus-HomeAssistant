@@ -263,12 +263,12 @@ template:
       - name: Charging start time
         unique_id: wb1_charging_start_time
         state: >
-          {{ as_local(as_datetime(states.sensor.charging_start_time_raw.state)).isoformat() }}
+          {{ as_local(as_datetime(states.sensor.charging_start_time_raw.state)).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging end time
         unique_id: wb1_charging_end_time
         state: >
-          {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).isoformat() }}
+          {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging duration
         unique_id: wb1_charging_duration
