@@ -1,7 +1,7 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2023-12-13
+# last update: 2024-02-09
 
 modbus:
   - name: SungrowACx
@@ -36,14 +36,6 @@ modbus:
         device_class: Voltage
         scan_interval: 600
 
-      - name: Working mode
-        unique_id: wb1_working_mode
-        slave: !secret wallbox_modbus_slave
-        address: 21262 # reg 21263
-        input_type: holding
-        data_type: uint16
-        scan_interval: 600
-
       - name: Phase switching status Raw
         unique_id: wb1_phase_switching_status_raw
         slave: !secret wallbox_modbus_slave
@@ -69,7 +61,7 @@ modbus:
         slave: !secret wallbox_modbus_slave
         address: 21272 # reg 21273
         input_type: input
-        data_type: uint32
+        data_type: uint16
         precision: 1
         unit_of_measurement: W
         device_class: Power
@@ -86,6 +78,7 @@ modbus:
         unit_of_measurement: Wh
         device_class: Energy
         scale: 1
+        swap: word
         scan_interval: 600
 
       - name: Phase A charging voltage
@@ -180,6 +173,7 @@ modbus:
         device_class: Energy
         state_class: total_increasing
         scale: 1
+        swap: word
         scan_interval: 60 
 
       - name: Charging status Raw
@@ -206,17 +200,6 @@ modbus:
         input_type: input
         data_type: uint32
         swap: word
-        scan_interval: 10
-
-      - name: Mileage per kWh
-        unique_id: wb1_mile_per_kwh
-        slave: !secret wallbox_modbus_slave
-        address: 21231 # reg 21232
-        input_type: holding
-        data_type: uint16
-        unit_of_measurement: km/kWh
-        precision: 1
-        scale: 0.1
         scan_interval: 10
 
       #####################
@@ -256,17 +239,41 @@ modbus:
         data_type: uint16
         scan_interval: 10
 
+      - name: Mileage per kWh
+        unique_id: wb1_mile_per_kwh
+        slave: !secret wallbox_modbus_slave
+        address: 21231 # reg 21232
+        input_type: holding
+        data_type: uint16
+        unit_of_measurement: km/kWh
+        precision: 1
+        scale: 0.1
+        scan_interval: 10
+
+      - name: Working mode
+        unique_id: wb1_working_mode
+        slave: !secret wallbox_modbus_slave
+        address: 21262 # reg 21263
+        input_type: holding
+        data_type: uint16
+        scan_interval: 600
+
 template:
   - sensor:
       - name: Charging start time
         unique_id: wb1_charging_start_time
         state: >
-          {{ as_datetime(states.sensor.charging_start_time_raw.state) }}
+          {{ as_local(as_datetime(states.sensor.charging_start_time_raw.state)).isoformat() }}
 
       - name: Charging end time
         unique_id: wb1_charging_end_time
         state: >
-          {{ as_datetime(states.sensor.charging_end_time_raw.state) }}
+          {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).isoformat() }}
+
+      - name: Charging duration
+        unique_id: wb1_charging_duration
+        state: >
+          {{ as_datetime(states.sensor.charging_end_time_raw.state) - as_datetime(states.sensor.charging_start_time_raw.state) }}
   
       - name: Wallbox device type
         unique_id: wb1_device_type
