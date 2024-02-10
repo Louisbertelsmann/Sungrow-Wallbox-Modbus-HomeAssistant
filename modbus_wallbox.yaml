@@ -161,6 +161,7 @@ modbus:
         unit_of_measurement: W
         device_class: power
         state_class: measurement
+        swap: word
         scan_interval: 10
 
       - name: Charging energy
