@@ -1,7 +1,7 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2024-02-09
+# last update: 2024-02-11
 
 modbus:
   - name: SungrowACx
@@ -161,6 +161,7 @@ modbus:
         unit_of_measurement: W
         device_class: power
         state_class: measurement
+        swap: word
         scan_interval: 10
 
       - name: Charging energy
@@ -174,7 +175,7 @@ modbus:
         state_class: total_increasing
         scale: 1
         swap: word
-        scan_interval: 60 
+        scan_interval: 10 
 
       - name: Charging status Raw
         unique_id: wb1_charging_status
@@ -263,17 +264,22 @@ template:
       - name: Charging start time
         unique_id: wb1_charging_start_time
         state: >
-          {{ as_local(as_datetime(states.sensor.charging_start_time_raw.state)).isoformat() }}
+          {{ as_local(as_datetime(states.sensor.charging_start_time_raw.state)).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging end time
         unique_id: wb1_charging_end_time
         state: >
-          {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).isoformat() }}
+          {{ as_local(as_datetime(states.sensor.charging_end_time_raw.state)).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging duration
         unique_id: wb1_charging_duration
         state: >
           {{ as_datetime(states.sensor.charging_end_time_raw.state) - as_datetime(states.sensor.charging_start_time_raw.state) }}
+
+      - name: Charged range
+        unique_id: wb1_charged_range
+        state: >
+          {{ (((states.sensor.charging_energy.state | int) * (states.sensor.mileage_per_kwh.state | int) / 1000) | round(1))}} km
   
       - name: Wallbox device type
         unique_id: wb1_device_type
@@ -348,6 +354,14 @@ input_number:
     name: Set output current
     min: 6
     max: 63
+    initial: 16
+    step: 0.1
+
+  set_wb1_mileage_per_kwh:
+    name: Set mileage per kwh
+    min: 1
+    max: 500
+    mode: box
     step: 0.1
 
 input_select:
@@ -376,7 +390,7 @@ automation:
     trigger:
       - platform: state
         entity_id:
-          - input_select.set_wb1_output_current
+          - input_number.set_wb1_output_current
     action:
       - service: modbus.write_register
         data_template:
@@ -384,6 +398,22 @@ automation:
           slave: !secret wallbox_modbus_slave
           address: 21202 # reg 21203
           value: "{{ states('input_number.set_wb1_output_current') | int }}"
+    mode: single
+
+  - id: "automation_mileage_per_kwh"
+    alias: "wallbox mileage per kwh"
+    description: "Sets mileage per kWh"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_number.set_wb1_mileage_per_kwh
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21231 # reg 21232
+          value: "{{ ((states('input_number.set_wb1_mileage_per_kwh') | float ) * 10) | int }}"
     mode: single
 
   - id: "automation_wallbox_change_phase_switch_cmd"
