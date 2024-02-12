@@ -90,7 +90,7 @@ modbus:
         unit_of_measurement: V
         device_class: Voltage
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Phase A charging current
         unique_id: wb1_phase_a_charging_current
@@ -102,7 +102,7 @@ modbus:
         device_class: power
         state_class: measurement
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Phase B charging voltage
         unique_id: wb1_phase_b_charging_voltage
@@ -114,7 +114,7 @@ modbus:
         device_class: Voltage
         state_class: measurement
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Phase B charging current
         unique_id: wb1_phase_b_charging_current
@@ -126,7 +126,7 @@ modbus:
         device_class: Current
         state_class: measurement
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Phase C charging voltage
         unique_id: wb1_phase_c_charging_voltage
@@ -138,7 +138,7 @@ modbus:
         device_class: Voltage
         state_class: measurement
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Phase C charging current
         unique_id: wb1_phase_c_charging_current
@@ -150,7 +150,7 @@ modbus:
         device_class: Current
         state_class: measurement
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Charging power
         unique_id: wb1_charging_power
@@ -162,7 +162,7 @@ modbus:
         device_class: power
         state_class: measurement
         swap: word
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Charging energy
         unique_id: wb1_charging_energy
@@ -175,7 +175,7 @@ modbus:
         state_class: total_increasing
         scale: 1
         swap: word
-        scan_interval: 10 
+        scan_interval: 600 
 
       - name: Charging status Raw
         unique_id: wb1_charging_status
@@ -192,7 +192,7 @@ modbus:
         input_type: input
         data_type: uint32
         swap: word
-        scan_interval: 10
+        scan_interval: 600
       
       - name: Charging end time Raw
         unique_id: wb1_charging_end_time_raw
@@ -201,7 +201,7 @@ modbus:
         input_type: input
         data_type: uint32
         swap: word
-        scan_interval: 10
+        scan_interval: 600
 
       #####################
       # holding registers
@@ -214,7 +214,7 @@ modbus:
         input_type: holding
         data_type: uint16
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 600
 
       - name: Single phase/Three phase switching
         unique_id: wb1_phase_switching
@@ -222,7 +222,7 @@ modbus:
         address: 21203 # reg 21204
         input_type: holding
         data_type: uint16
-        scan_interval: 10
+        scan_interval: 60
 
       - name: Charger enable
         unique_id: wb1_charger_enable
@@ -230,7 +230,7 @@ modbus:
         address: 21210 # reg 21211
         input_type: holding
         data_type: uint16
-        scan_interval: 10
+        scan_interval: 60
 
       - name: Remote control
         unique_id: wb1_remote_control
@@ -238,7 +238,7 @@ modbus:
         address: 21211 # reg 21212
         input_type: holding
         data_type: uint16
-        scan_interval: 10
+        scan_interval: 60
 
       - name: Mileage per kWh
         unique_id: wb1_mile_per_kwh
@@ -249,7 +249,7 @@ modbus:
         unit_of_measurement: km/kWh
         precision: 1
         scale: 0.1
-        scan_interval: 10
+        scan_interval: 60
 
       - name: Working mode
         unique_id: wb1_working_mode
@@ -489,4 +489,46 @@ automation:
             {% elif is_state('input_select.set_wb_remote_control', "Stop charging") %} 
               {{stop_charging}}
             {% endif %}
+    mode: single
+
+  - id: "automation_fast_update_while_charging"
+    alias: automation_fast_update_while_charging
+    description: Update relevant entities for charging every 10sec and not just every hour
+    trigger:
+      - platform: state
+        entity_id:
+          - sensor.charging_status_raw
+        to: "3"
+    condition: []
+    action:
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.charging_start_time_raw
+      - repeat:
+          sequence:
+            - service: homeassistant.update_entity
+              data: {}
+              target:
+                entity_id:
+                  - sensor.charging_power
+                  - sensor.phase_a_charging_current
+                  - sensor.phase_a_charging_voltage
+                  - sensor.phase_b_charging_current
+                  - sensor.phase_b_charging_voltage
+                  - sensor.phase_c_charging_current
+                  - sensor.phase_c_charging_voltage
+                  - sensor.output_current_setting
+                  - sensor.charging_energy
+                  - sensor.charging_end_time_raw
+                  - sensor.total_energy
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 10
+                milliseconds: 0
+          while:
+            - condition: state
+              entity_id: sensor.charging_status_raw
+              state: "3"
     mode: single
