@@ -98,8 +98,8 @@ modbus:
         address: 21302 # reg 21303
         input_type: input
         data_type: uint16
-        unit_of_measurement: W
-        device_class: power
+        unit_of_measurement: A
+        device_class: Current
         state_class: measurement
         scale: 0.1
         scan_interval: 600
@@ -370,13 +370,13 @@ input_select:
     options:
       - "Three phase"
       - "Single phase"
-  
+
   set_wb_charger_enable:
     name: Charger enable
     options:
       - "Disable"
       - "Enable"
-  
+
   set_wb_remote_control:
     name: Remote control
     options:
@@ -397,7 +397,7 @@ automation:
           hub: SungrowACx
           slave: !secret wallbox_modbus_slave
           address: 21202 # reg 21203
-          value: "{{ states('input_number.set_wb1_output_current') | int }}"
+          value: "{{ (states('input_number.set_wb1_output_current') | int) * 10 }}"
     mode: single
 
   - id: "automation_mileage_per_kwh"
@@ -461,11 +461,11 @@ automation:
           value: >
             {% if is_state('input_select.set_wb_charger_enable', "Disable") %} 
               {{disable}}
-            {% elif is_state('input_select.set_wb_phase_switch', "Enable") %} 
+            {% elif is_state('input_select.set_wb_charger_enable', "Enable") %} 
               {{enable}}
             {% endif %}
     mode: single
-  
+
   - id: "automation_wallbox_remote_control_cmd"
     alias: "wallbox charger remote control cmd"
     description: "Remote control wallbox"
