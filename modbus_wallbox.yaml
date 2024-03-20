@@ -76,7 +76,8 @@ modbus:
         data_type: uint32
         precision: 1
         unit_of_measurement: Wh
-        device_class: Energy
+        state_class: total_increasing
+        device_class: Energy        
         scale: 1
         swap: word
         scan_interval: 600
@@ -172,7 +173,6 @@ modbus:
         data_type: uint32
         unit_of_measurement: Wh
         device_class: Energy
-        state_class: total_increasing
         scale: 1
         swap: word
         scan_interval: 600 
