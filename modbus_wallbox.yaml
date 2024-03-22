@@ -76,7 +76,8 @@ modbus:
         data_type: uint32
         precision: 1
         unit_of_measurement: Wh
-        device_class: Energy
+        state_class: total_increasing
+        device_class: Energy        
         scale: 1
         swap: word
         scan_interval: 600
@@ -98,8 +99,8 @@ modbus:
         address: 21302 # reg 21303
         input_type: input
         data_type: uint16
-        unit_of_measurement: W
-        device_class: power
+        unit_of_measurement: A
+        device_class: Current
         state_class: measurement
         scale: 0.1
         scan_interval: 600
@@ -172,7 +173,6 @@ modbus:
         data_type: uint32
         unit_of_measurement: Wh
         device_class: Energy
-        state_class: total_increasing
         scale: 1
         swap: word
         scan_interval: 600 
@@ -201,6 +201,14 @@ modbus:
         input_type: input
         data_type: uint32
         swap: word
+        scan_interval: 600
+
+      - name: Start mode Raw
+        unique_id: wb1_start_mode_raw
+        slave: !secret wallbox_modbus_slave
+        address: 21313
+        input_type: input
+        data_type: uint16
         scan_interval: 600
 
       #####################
@@ -349,6 +357,19 @@ template:
             Unknown charging status!
           {% endif %}
 
+      - name: Start mode
+        unique_id: wb1_start_mode
+        availability:
+          "{{states('sensor.start_mode_raw')|is_number}}"
+        state: >-
+          {% if ((states('sensor.start_mode_raw') | int(default=0))  == 1) %}
+            Start with EMS
+          {% elif ((states('sensor.start_mode_raw') | int(default=0)) == 2) %}
+            Start by swiping
+          {% else %}
+            Unknown start mode!
+          {% endif %}
+
 input_number:
   set_wb1_output_current:
     name: Set output current
@@ -370,18 +391,34 @@ input_select:
     options:
       - "Three phase"
       - "Single phase"
-  
+
   set_wb_charger_enable:
     name: Charger enable
     options:
       - "Disable"
       - "Enable"
-  
+
   set_wb_remote_control:
     name: Remote control
     options:
       - "Start charging"
       - "Stop charging"
+
+  set_wb_working_mode:
+    name: Working mode
+    options:
+      - "Network"
+      - "Plug and Play"
+      - "EMS"
+
+input_button:
+  wb_start_charging:
+    name: Start charging
+    icon: mdi:play
+
+  wb_stop_charging:
+    name: Stop charging
+    icon: mdi:stop
 
 automation:
   - id: "automation_wallbox_output_current"
@@ -397,7 +434,7 @@ automation:
           hub: SungrowACx
           slave: !secret wallbox_modbus_slave
           address: 21202 # reg 21203
-          value: "{{ states('input_number.set_wb1_output_current') | int }}"
+          value: "{{ (states('input_number.set_wb1_output_current') | int) * 10 }}"
     mode: single
 
   - id: "automation_mileage_per_kwh"
@@ -461,11 +498,11 @@ automation:
           value: >
             {% if is_state('input_select.set_wb_charger_enable', "Disable") %} 
               {{disable}}
-            {% elif is_state('input_select.set_wb_phase_switch', "Enable") %} 
+            {% elif is_state('input_select.set_wb_charger_enable', "Enable") %} 
               {{enable}}
             {% endif %}
     mode: single
-  
+
   - id: "automation_wallbox_remote_control_cmd"
     alias: "wallbox charger remote control cmd"
     description: "Remote control wallbox"
@@ -488,6 +525,76 @@ automation:
               {{start_charging}}
             {% elif is_state('input_select.set_wb_remote_control', "Stop charging") %} 
               {{stop_charging}}
+            {% endif %}
+    mode: single
+
+  - id: "automation_wallbox_start_charging"
+    alias: "wallbox charger start remote control cmd"
+    description: "Remote control wallbox"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_button.wb_start_charging
+    condition: []
+    variables:
+      start_charging: 0
+      stop_charging: 1
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21211 # reg 21212
+          value: >
+              {{start_charging}}
+    mode: single
+
+  - id: "automation_wallbox_stop_charging"
+    alias: "wallbox charger stop remote control cmd"
+    description: "Remote control wallbox"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_button.wb_stop_charging
+    condition: []
+    variables:
+      start_charging: 0
+      stop_charging: 1
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21211 # reg 21212
+          value: >
+              {{stop_charging}}
+    mode: single
+
+  - id: "automation_wallbox_set_wb_working_mode"
+    alias: "wallbox set working mode"
+    description: "Set wallbox working mode"
+    trigger:
+      - platform: state
+        entity_id:
+          - input_select.set_wb_working_mode
+    condition: []
+    variables:
+      network: 0
+      plug_and_play: 2
+      ems: 6
+    action:
+      - service: modbus.write_register
+        data_template:
+          hub: SungrowACx
+          slave: !secret wallbox_modbus_slave
+          address: 21262 # reg 21263
+          value: >
+            {% if is_state('input_select.set_wb_working_mode', "Network") %} 
+              {{network}}
+            {% elif is_state('input_select.set_wb_working_mode', "Plug and Play") %} 
+              {{plug_and_play}}
+            {% elif is_state('input_select.set_wb_working_mode', "EMS") %} 
+              {{ems}}
             {% endif %}
     mode: single
 
