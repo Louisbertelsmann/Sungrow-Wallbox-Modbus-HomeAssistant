@@ -222,6 +222,7 @@ modbus:
         input_type: holding
         data_type: uint16
         scale: 0.1
+        unit_of_measurement: A
         scan_interval: 600
 
       - name: Single phase/Three phase switching
