@@ -8,7 +8,6 @@ modbus:
     type: tcp
     host: !secret wallbox_modbus_host_ip
     port: !secret wallbox_modbus_port
-    retries: 10
     sensors:
       - name: Wallbox device type code
         unique_id: wb1_dev_number_raw
