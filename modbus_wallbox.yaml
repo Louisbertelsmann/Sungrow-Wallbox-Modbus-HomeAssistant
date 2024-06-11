@@ -1,14 +1,13 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2024-03-22
+# last update: 2024-06-11
 
 modbus:
   - name: SungrowACx
     type: tcp
     host: !secret wallbox_modbus_host_ip
     port: !secret wallbox_modbus_port
-    retries: 10
     sensors:
       - name: Wallbox device type code
         unique_id: wb1_dev_number_raw
@@ -363,7 +362,9 @@ template:
         availability:
           "{{states('sensor.start_mode_raw')|is_number}}"
         state: >-
-          {% if ((states('sensor.start_mode_raw') | int(default=0))  == 1) %}
+          {% if ((states('sensor.start_mode_raw') | int(default=0)) == 0) %}
+            Stopped
+          {% elif ((states('sensor.start_mode_raw') | int(default=0))  == 1) %}
             Start with EMS
           {% elif ((states('sensor.start_mode_raw') | int(default=0)) == 2) %}
             Start by swiping
@@ -398,12 +399,6 @@ input_select:
     options:
       - "Disable"
       - "Enable"
-
-  set_wb_remote_control:
-    name: Remote control
-    options:
-      - "Start charging"
-      - "Stop charging"
 
   set_wb_working_mode:
     name: Working mode
@@ -501,31 +496,6 @@ automation:
               {{disable}}
             {% elif is_state('input_select.set_wb_charger_enable', "Enable") %} 
               {{enable}}
-            {% endif %}
-    mode: single
-
-  - id: "automation_wallbox_remote_control_cmd"
-    alias: "wallbox charger remote control cmd"
-    description: "Remote control wallbox"
-    trigger:
-      - platform: state
-        entity_id:
-          - input_select.set_wb_remote_control
-    condition: []
-    variables:
-      start_charging: 0
-      stop_charging: 1
-    action:
-      - service: modbus.write_register
-        data_template:
-          hub: SungrowACx
-          slave: !secret wallbox_modbus_slave
-          address: 21211 # reg 21212
-          value: >
-            {% if is_state('input_select.set_wb_remote_control', "Start charging") %} 
-              {{start_charging}}
-            {% elif is_state('input_select.set_wb_remote_control', "Stop charging") %} 
-              {{stop_charging}}
             {% endif %}
     mode: single
 
