@@ -1,7 +1,7 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2024-06-11
+# last update: 2024-07-24
 
 modbus:
   - name: SungrowACx
@@ -232,8 +232,8 @@ modbus:
         data_type: uint16
         scan_interval: 60
 
-      - name: Charger enable
-        unique_id: wb1_charger_enable
+      - name: Charger enable raw
+        unique_id: wb1_charger_enable_raw
         slave: !secret wallbox_modbus_slave
         address: 21210 # reg 21211
         input_type: holding
@@ -323,9 +323,9 @@ template:
           "{{states('sensor.phase_switching_status_raw')|is_number}}"
         state: >-
           {% if ((states('sensor.phase_switching_status_raw') | int(default=0))  == 0) %}
-            Three-phase
+            Three phase
           {% elif ((states('sensor.phase_switching_status_raw') | int(default=0)) == 1) %}
-            Single-phase
+            Single phase
           {% else %}
             Unknown phase switching status!
           {% endif %}
@@ -371,6 +371,19 @@ template:
           {% else %}
             Unknown start mode!
           {% endif %}
+          
+      - name: Charger enable
+        unique_id: wb1_charger_enable
+        availability:
+          "{{states('sensor.charger_enable_raw')|is_number}}"
+        state: >-
+          {% if ((states('sensor.charger_enable_raw') | int(default=0)) == 0) %}
+            Disabled
+          {% elif ((states('sensor.charger_enable_raw') | int(default=0))  == 1) %}
+            Enabled
+          {% else %}
+            Unknown charger enable mode!
+          {% endif %}
 
 input_number:
   set_wb1_output_current:
@@ -397,8 +410,8 @@ input_select:
   set_wb_charger_enable:
     name: Charger enable
     options:
-      - "Disable"
-      - "Enable"
+      - "Disabled"
+      - "Enabled"
 
   set_wb_working_mode:
     name: Working mode
@@ -424,6 +437,10 @@ automation:
       - platform: state
         entity_id:
           - input_number.set_wb1_output_current
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('input_number.set_wb1_output_current') | float != states('sensor.output_current_setting') | float }}
     action:
       - service: modbus.write_register
         data_template:
@@ -431,6 +448,35 @@ automation:
           slave: !secret wallbox_modbus_slave
           address: 21202 # reg 21203
           value: "{{ (states('input_number.set_wb1_output_current') | int) * 10 }}"
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.output_current_setting
+    mode: single
+    
+  - id: "automation_wallbox_output_current_update"
+    alias: "wallbox output current update"
+    description: "Sets the maximum output current of the wallbox update"
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.output_current_setting
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('sensor.output_current_setting', 'unavailable') }}"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_wb1_output_current
+        data:
+          value: "{{ states('sensor.output_current_setting') }}"
     mode: single
 
   - id: "automation_mileage_per_kwh"
@@ -440,6 +486,10 @@ automation:
       - platform: state
         entity_id:
           - input_number.set_wb1_mileage_per_kwh
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('input_number.set_wb1_mileage_per_kwh') | float != states('sensor.mileage_per_kwh') | float }}
     action:
       - service: modbus.write_register
         data_template:
@@ -447,6 +497,35 @@ automation:
           slave: !secret wallbox_modbus_slave
           address: 21231 # reg 21232
           value: "{{ ((states('input_number.set_wb1_mileage_per_kwh') | float ) * 10) | int }}"
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.mileage_per_kwh
+    mode: single
+    
+  - id: "automation_mileage_per_kwh_update"
+    alias: "wallbox mileage per kwh update"
+    description: "Sets mileage per kWh update"
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.mileage_per_kwh
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('sensor.mileage_per_kwh', 'unavailable') }}"
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_wb1_mileage_per_kwh
+        data:
+          value: "{{ states('sensor.mileage_per_kwh') }}"
     mode: single
 
   - id: "automation_wallbox_change_phase_switch_cmd"
@@ -456,7 +535,10 @@ automation:
       - platform: state
         entity_id:
           - input_select.set_wb_phase_switch
-    condition: []
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('input_select.set_wb_phase_switch') != states('sensor.phase_switching_status') }}
     variables:
       three_phase: 0
       single_phase: 1
@@ -472,6 +554,35 @@ automation:
             {% elif is_state('input_select.set_wb_phase_switch', "Single phase") %} 
               {{single_phase}}
             {% endif %}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.single_phase_three_phase_switching
+    mode: single
+    
+  - id: "automation_wallbox_change_phase_switch_cmd_update"
+    alias: "wallbox change phase switch cmd update"
+    description: "Switch wallbox operation mode between Single- and Three-phase mode update"
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.single_phase_three_phase_switching
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('sensor.single_phase_three_phase_switching', 'unavailable') }}"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.set_wb_phase_switch
+        data:
+          option: "{{ states('sensor.phase_switching_status') }}"
     mode: single
   
   - id: "automation_wallbox_charger_enable_cmd"
@@ -481,7 +592,10 @@ automation:
       - platform: state
         entity_id:
           - input_select.set_wb_charger_enable
-    condition: []
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('input_select.set_wb_charger_enable') != states('sensor.charger_enable') }}
     variables:
       disable: 0
       enable: 1
@@ -497,6 +611,35 @@ automation:
             {% elif is_state('input_select.set_wb_charger_enable', "Enable") %} 
               {{enable}}
             {% endif %}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.charger_enable
+    mode: single
+    
+  - id: "automation_wallbox_charger_enable_cmd_update"
+    alias: "wallbox charger enable cmd update"
+    description: "Switch wallbox operation mode between enabled and disabled update"
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.charger_enable_raw
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('sensor.charger_enable', 'unavailable') }}"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.set_wb_charger_enable
+        data:
+          option: "{{ states('sensor.charger_enable') }}"
     mode: single
 
   - id: "automation_wallbox_start_charging"
@@ -548,7 +691,10 @@ automation:
       - platform: state
         entity_id:
           - input_select.set_wb_working_mode
-    condition: []
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('input_select.set_wb_working_mode') != states('sensor.wallbox_working_mode') }}
     variables:
       network: 0
       plug_and_play: 2
@@ -567,6 +713,35 @@ automation:
             {% elif is_state('input_select.set_wb_working_mode', "EMS") %} 
               {{ems}}
             {% endif %}
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id: sensor.working_mode
+    mode: single
+    
+  - id: "automation_wallbox_set_wb_working_mode_update"
+    alias: "wallbox set working mode update"
+    description: "Set wallbox working mode update"
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: state
+        entity_id:
+          - sensor.working_mode
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('sensor.working_mode', 'unavailable') }}"
+    action:
+      - service: input_select.select_option
+        target:
+          entity_id: input_select.set_wb_working_mode
+        data:
+          option: "{{ states('sensor.wallbox_working_mode') }}"
     mode: single
 
   - id: "automation_fast_update_while_charging"
