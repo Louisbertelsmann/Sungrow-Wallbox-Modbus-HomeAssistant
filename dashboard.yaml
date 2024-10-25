@@ -1,0 +1,67 @@
+views:
+  - title: Charger
+    cards:
+      - type: entities
+        entities:
+          - entity: sensor.wb1_dev_number_raw
+          - entity: sensor.wallbox_working_mode
+          - entity: sensor.mileage_per_kwh
+          - entity: sensor.phase_switching_status
+          - entity: sensor.total_energy
+          - entity: sensor.minimum_charging_power
+          - entity: sensor.maximum_charging_power
+          - entity: sensor.start_mode
+        title: Infos
+      - type: entities
+        entities:
+          - entity: sensor.charging_energy
+          - entity: sensor.charging_duration
+          - entity: sensor.charged_range
+          - entity: sensor.charging_start_time
+          - entity: sensor.charging_end_time
+        title: Letztes Laden
+      - type: entities
+        entities:
+          - entity: input_select.set_wb_charger_enable
+          - entity: input_select.set_wb_phase_switch
+          - entity: input_number.set_wb1_mileage_per_kwh
+          - entity: input_number.set_wb1_output_current
+          - entity: automation.wallbox_change_phase_switch_cmd
+          - entity: automation.wallbox_charger_enable_cmd
+          - entity: automation.wallbox_output_current
+          - entity: input_select.set_wb_working_mode
+          - entity: input_button.wb_start_charging
+          - entity: input_button.wb_stop_charging
+        title: Einstellungen
+        show_header_toggle: false
+      - type: entities
+        entities:
+          - entity: sensor.charging_status
+          - entity: sensor.charging_power
+          - entity: sensor.phase_a_charging_current
+          - entity: sensor.phase_a_charging_voltage
+          - entity: sensor.phase_b_charging_current
+          - entity: sensor.phase_b_charging_voltage
+          - entity: sensor.phase_c_charging_current
+          - entity: sensor.phase_c_charging_voltage
+          - entity: sensor.output_current_setting
+        title: Laden aktuell
+      - type: gauge
+        entity: sensor.charging_power
+        needle: true
+        min: 4140
+        max: 11000
+      - type: entities
+        entities:
+          - entity: sensor.charging_status_raw
+          - entity: sensor.charging_start_time_raw
+          - entity: sensor.charging_end_time_raw
+          - entity: sensor.phase_switching_status_raw
+          - entity: sensor.working_mode
+          - entity: sensor.power_phases
+          - entity: sensor.rated_voltage
+          - entity: sensor.remote_control
+          - entity: sensor.single_phase_three_phase_switching
+          - entity: sensor.charger_enable
+          - entity: sensor.wallbox_device_type_code
+        title: Raw
