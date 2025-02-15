@@ -606,9 +606,9 @@ automation:
           slave: !secret wallbox_modbus_slave
           address: 21210 # reg 21211
           value: >
-            {% if is_state('input_select.set_wb_charger_enable', "Disable") %} 
+            {% if is_state('input_select.set_wb_charger_enable', "Disabled") %} 
               {{disable}}
-            {% elif is_state('input_select.set_wb_charger_enable', "Enable") %} 
+            {% elif is_state('input_select.set_wb_charger_enable', "Enabled") %} 
               {{enable}}
             {% endif %}
       - delay:
