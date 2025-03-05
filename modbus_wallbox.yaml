@@ -272,21 +272,21 @@ template:
       - name: Charging start time
         unique_id: wb1_charging_start_time
         availability:
-          "{{states('sensor.charging_start_time_raw')|is_number}}"
+          "{{ as_datetime(states.sensor.charging_start_time_raw.state) is not none }}"
         state: >
           {{ as_datetime(states.sensor.charging_start_time_raw.state).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging end time
         unique_id: wb1_charging_end_time
         availability:
-          "{{states('sensor.charging_end_time_raw')|is_number}}"
+          "{{ as_datetime(states.sensor.charging_end_time_raw.state) is not none }}"
         state: >
           {{ as_datetime(states.sensor.charging_end_time_raw.state).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging duration
         unique_id: wb1_charging_duration
         availability:
-          "{{states('sensor.charging_start_time_raw')|is_number and states('sensor.charging_end_time_raw')|is_number}}"
+          "{{as_datetime(states.sensor.charging_start_time_raw.state) is not none and as_datetime(states.sensor.charging_end_time_raw.state) is not none}}"
         state: >
           {{ as_datetime(states.sensor.charging_end_time_raw.state) - as_datetime(states.sensor.charging_start_time_raw.state) }}
 
