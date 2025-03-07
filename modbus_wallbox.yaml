@@ -271,21 +271,29 @@ template:
   - sensor:
       - name: Charging start time
         unique_id: wb1_charging_start_time
+        availability:
+          "{{ as_datetime(states.sensor.charging_start_time_raw.state) is not none }}"
         state: >
           {{ as_datetime(states.sensor.charging_start_time_raw.state).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging end time
         unique_id: wb1_charging_end_time
+        availability:
+          "{{ as_datetime(states.sensor.charging_end_time_raw.state) is not none }}"
         state: >
           {{ as_datetime(states.sensor.charging_end_time_raw.state).strftime("%d.%m.%Y %H:%M") }}
 
       - name: Charging duration
         unique_id: wb1_charging_duration
+        availability:
+          "{{as_datetime(states.sensor.charging_start_time_raw.state) is not none and as_datetime(states.sensor.charging_end_time_raw.state) is not none}}"
         state: >
           {{ as_datetime(states.sensor.charging_end_time_raw.state) - as_datetime(states.sensor.charging_start_time_raw.state) }}
 
       - name: Charged range
         unique_id: wb1_charged_range
+        availability:
+          "{{states('sensor.charging_energy')|is_number and states('sensor.mileage_per_kwh')|is_number}}"
         state: >
           {{ (((states.sensor.charging_energy.state | int) * (states.sensor.mileage_per_kwh.state | int) / 1000) | round(1))}} km
   
