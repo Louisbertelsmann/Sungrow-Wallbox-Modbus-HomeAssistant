@@ -1,7 +1,7 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2024-07-24
+# last update: 2025-11-06
 
 modbus:
   - name: SungrowACx
