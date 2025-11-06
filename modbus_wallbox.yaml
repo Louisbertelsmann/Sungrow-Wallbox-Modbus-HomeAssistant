@@ -306,6 +306,8 @@ template:
             AC007-00
           {% elif ((states('sensor.wallbox_device_type_code') | int(default=0)) == 0x20DA) %}
             AC011E-01
+          {% elif ((states('sensor.wallbox_device_type_code') | int(default=0)) == 0x3F80) %}
+            AC22E-01
           {% else %}
             Unknown device code!
           {% endif %}
