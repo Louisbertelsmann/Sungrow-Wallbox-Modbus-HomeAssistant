@@ -1,7 +1,7 @@
 # Home Assistant Sungrow wallbox integration
 # https://github.com/Louisbertelsmann/Sungrow-Wallbox-Modbus-HomeAssistant
 # by Louis Bertelsmann
-# last update: 2024-07-24
+# last update: 2025-11-06
 
 modbus:
   - name: SungrowACx
@@ -306,6 +306,8 @@ template:
             AC007-00
           {% elif ((states('sensor.wallbox_device_type_code') | int(default=0)) == 0x20DA) %}
             AC011E-01
+          {% elif ((states('sensor.wallbox_device_type_code') | int(default=0)) == 0x3F80) %}
+            AC22E-01
           {% else %}
             Unknown device code!
           {% endif %}
